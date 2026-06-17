@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -16,19 +19,20 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14.4' 
+          python-version: '3.14.4'
           cache: 'pip'          
+          cache-dependency-path: backend/requirements.txt
 
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install pytest httpx  # Standard testing libraries for FastAPI
+          pip install pytest httpx
 
       - name: Run Tests
         run: |
           pytest
-
+          
   deploy:
     needs: test
     runs-on: ubuntu-latest
