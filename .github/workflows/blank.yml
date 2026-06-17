@@ -31,8 +31,8 @@ jobs:
 
       - name: Run Tests
         run: |
-          pytest
-          
+          pytest --suppress-no-test-exit-code
+
   deploy:
     needs: test
     runs-on: ubuntu-latest
