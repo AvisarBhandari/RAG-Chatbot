@@ -5,25 +5,47 @@ from chunking import chunk_text
 from embedding import Embedding
 import hashlib
 from vectorstore import collection
+import pandas as pd
 
 
 class Document_Ingestor:
     def __init__(self):
         self.metadata = "metadata.json"
 
-    def document_changed(self) -> bool:
+    def document_changed(self, path: str):
         if not os.path.exists(self.metadata):
             print("Metadata Does Not Exist.")
             return False
         else:
             json_data = self.load_metadata()
-            documentes = load_document("data")
-            new_hash = set()
+            documentes = load_document(path)
+            new_document = []
+            # Map old hashes to their corresponding document ID
+            old_id_map = {
+                item.get("hash"): item.get("id")
+                for item in json_data
+                if item.get("hash")
+            }
+            old_hashes = set(old_id_map.keys())
+            new_hashes = set()
+            # Identify documents to ADD
             for doc in documentes:
-                new_hash.add(self.get_document_hash(doc["content"]))
-
-            old_hash = {item.get("hash") for item in json_data}
-            return all(hash in old_hash for hash in new_hash)
+                new_hash = self.get_document_hash(doc["content"])
+                new_hashes.add(new_hash)
+                if new_hashes not in old_hashes:
+                    new_document.append({"add": doc})
+            # Identify documents to REMOVE (Appends just the ID)
+            removed_hashes = old_hashes - new_hashes
+            for r_hash in removed_hashes:
+                doc_id = old_id_map[r_hash]
+                new_document.append({"remove": doc_id})
+            # Return results if changes exist
+            if new_document:
+                print("update found")
+                return new_document
+            else:
+                print("No new documents found.")
+                return False
 
     def load_metadata(self) -> list[dict] | None:
         if not os.path.exists(self.metadata):
@@ -31,19 +53,25 @@ class Document_Ingestor:
             return None
         else:
             with open(self.metadata, "r") as f:
-                json_data = json.load(f)
+                json_data = json.loads(f.read())
+            # temporarily recover as pandas trun it JSON string instead of a JSON array.
+            if isinstance(json_data, str):
+                json_data = json.loads(json_data)
+
             return json_data
 
     def get_document_hash(self, document_content: str) -> str:
         return hashlib.sha256(document_content.encode()).hexdigest()
 
-    def save_metadata(self, metadata: list[dict]):
+    def save_metadata(self, document_id: str, content: str):
         loaded_metadata = self.load_metadata() or []
-        loaded_metadata.extend(metadata)
+        loaded_metadata.append(
+            {"id": document_id, "hash": self.get_document_hash(content)}
+        )
         with open(self.metadata, "w") as f:
             json.dump(loaded_metadata, f, indent=4)
 
-    def update_metadata(self, document_id: str, new_hash: str):
+    def update_metadata(self, document_id: str, content: str):
         metadata_list = self.load_metadata()
         if metadata_list is None:
             print("Metadata does not exist. Cannot update.")
@@ -51,7 +79,7 @@ class Document_Ingestor:
 
         for item in metadata_list:
             if item.get("id") == document_id:
-                item["hash"] = new_hash
+                item["hash"] = self.get_document_hash(content)
                 break
         else:
             print(f"Document with ID {document_id} not found in metadata.")
@@ -59,6 +87,15 @@ class Document_Ingestor:
 
         with open(self.metadata, "w") as f:
             json.dump(metadata_list, f, indent=4)
+
+    def delete_matadata(self, document_id: str):
+        df = pd.DataFrame(data=self.load_metadata())
+        document_id = set(document_id)
+        # (~ reverses the boolean mask to keep non-matching rows)
+        filtered_df = df[~df["hash"].isin(document_id)]
+        print(filtered_df)
+        with open(self.metadata, "w") as f:
+            json.dump(filtered_df.to_dict(orient="records"), f, indent=4)
 
     def chunk_document(self, document: list[dict]) -> list[dict]:
         """
@@ -101,3 +138,13 @@ class Document_Ingestor:
             print(f"Successfully upserted document with ID: {doc_id}")
         except Exception as e:
             print(f"Error occurred while upserting document with ID {doc_id}: {e}")
+
+    def remove_document(self, doc_id: str):
+        try:
+            collection.delete(
+                ids=doc_id,
+            )
+        except Exception as e:
+            print(f"Error occer while deleting data {doc_id}: {e}")
+
+
