@@ -1,5 +1,16 @@
-*__pycache__
-*.vscode
+.vscode
+*__pycache__/
+.env/
+venv/
+*.pyc
+.pyo
+.DS_Store
+.idea/
+*data/
 *.env
 *.next
-*.node_modules
+*node_modules/
+# *public/
+
+.vercel
+.env*
