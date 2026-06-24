@@ -34,17 +34,28 @@ def reindex():
                 remove_id = doc["remove"]
                 print(f"Removing document with ID: {remove_id}")
                 ingest_instance.remove_document(remove_id)
+                ingest_instance.remove_matadata(remove_id)
                 print(f"Document with ID: {remove_id} removed successfully.")
-                ingest_instance.delete_matadata([remove_id])
-                print(f"Metadata for document with ID: {remove_id} deleted successfully.")
+                print(
+                    f"Metadata for document with ID: {remove_id} deleted successfully."
+                )
             if "add" in doc:
                 add_doc = doc["add"]
                 print(f"Adding document with ID: {add_doc['id']}")
+
                 chunked_docs = ingest_instance.chunk_document(add_doc)
-                print(f"Document with ID: {add_doc['id']} chunked into {len(chunked_docs)} chunks.")
+                print(
+                    f"Document with ID: {add_doc['id']} chunked into {len(chunked_docs)} chunks."
+                )
                 for chunk in chunked_docs:
                     chunk_text = chunk["content"]
                     embedding = ingest_instance.embed_chunks([chunk_text])
-                    print(f"Embedding for chunk with ID: {chunk['id']} created successfully.")
+                    print(
+                        f"Embedding for chunk with ID: {chunk['id']} created successfully."
+                    )
                     ingest_instance.upsert_document(chunk["id"], chunk, embedding[0])
                     print(f"Chunk with ID: {chunk['id']} upserted successfully.")
+                ingest_instance.save_metadata(add_doc["id"], add_doc["content"])
+                print(
+                    f"Metadata for document with ID: {add_doc['id']} saved successfully."
+                )

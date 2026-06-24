@@ -32,7 +32,7 @@ class Document_Ingestor:
             for doc in documentes:
                 new_hash = self.get_document_hash(doc["content"])
                 new_hashes.add(new_hash)
-                if new_hashes not in old_hashes:
+                if new_hash not in old_hashes:
                     new_document.append({"add": doc})
             # Identify documents to REMOVE (Appends just the ID)
             removed_hashes = old_hashes - new_hashes
@@ -61,7 +61,7 @@ class Document_Ingestor:
             return json_data
 
     def get_document_hash(self, document_content: str) -> str:
-        return hashlib.sha256(document_content.encode()).hexdigest()
+        return hashlib.sha256(document_content.encode("utf-8")).hexdigest()
 
     def save_metadata(self, document_id: str, content: str):
         loaded_metadata = self.load_metadata() or []
@@ -71,7 +71,7 @@ class Document_Ingestor:
         with open(self.metadata, "w") as f:
             json.dump(loaded_metadata, f, indent=4)
 
-    def update_metadata(self, document_id: str, content: str):
+    def add_metadata(self, document_id: str, content: str):
         metadata_list = self.load_metadata()
         if metadata_list is None:
             print("Metadata does not exist. Cannot update.")
@@ -88,11 +88,18 @@ class Document_Ingestor:
         with open(self.metadata, "w") as f:
             json.dump(metadata_list, f, indent=4)
 
-    def delete_matadata(self, document_id: str):
+    def remove_matadata(self, document_id: str):
         df = pd.DataFrame(data=self.load_metadata())
-        document_id = set(document_id)
+        if document_id is list:
+            document_id = set(document_id)
+            
+            filtered_df = df[~df["id"].isin(document_id)]
+        else:
+            # Keeps rows where 'id' does NOT contain 'document_id'
+            filtered_df = df[~df["id"].str.contains(document_id, na=False)]
+
+        print(f"id: {document_id}")
         # (~ reverses the boolean mask to keep non-matching rows)
-        filtered_df = df[~df["hash"].isin(document_id)]
         print(filtered_df)
         with open(self.metadata, "w") as f:
             json.dump(filtered_df.to_dict(orient="records"), f, indent=4)
