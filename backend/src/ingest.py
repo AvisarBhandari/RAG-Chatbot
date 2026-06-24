@@ -1,10 +1,10 @@
 import json
 import os
-from load_document import load_document
-from chunking import chunk_text
-from embedding import Embedding
+from src.load_document import load_document
+from src.chunking import chunk_text
+from src.embedding import Embedding
 import hashlib
-from vectorstore import collection
+from src.vectorstore import collection
 import pandas as pd
 
 
@@ -14,8 +14,8 @@ class Document_Ingestor:
 
     def document_changed(self, path: str):
         if not os.path.exists(self.metadata):
-            print("Metadata Does Not Exist.")
-            return False
+            print(f"Metadata Does Not Exist. {os.getcwd()}")
+            return None
         else:
             json_data = self.load_metadata()
             documentes = load_document(path)
@@ -45,7 +45,7 @@ class Document_Ingestor:
                 return new_document
             else:
                 print("No new documents found.")
-                return False
+                return None
 
     def load_metadata(self) -> list[dict] | None:
         if not os.path.exists(self.metadata):
@@ -103,6 +103,7 @@ class Document_Ingestor:
         Each document is represented as a dictionary with 'id' and 'content' keys.
         """
         chunked_documents = []
+        document = document if isinstance(document, list) else [document]
         for doc in document:
             doc_id = doc.get("id")
             content = doc.get("content")
@@ -146,5 +147,3 @@ class Document_Ingestor:
             )
         except Exception as e:
             print(f"Error occer while deleting data {doc_id}: {e}")
-
-
