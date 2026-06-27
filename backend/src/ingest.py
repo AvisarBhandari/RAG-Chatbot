@@ -14,8 +14,10 @@ class Document_Ingestor:
 
     def document_changed(self, path: str):
         if not os.path.exists(self.metadata):
-            print(f"Metadata Does Not Exist. {os.getcwd()}")
-            return None
+            print("Metadata Does Not Exist. All documents will be added.")
+            documentes = load_document(path)
+            new_document = [{"add": doc} for doc in documentes]
+            return new_document
         else:
             json_data = self.load_metadata()
             documentes = load_document(path)
@@ -34,6 +36,7 @@ class Document_Ingestor:
                 new_hashes.add(new_hash)
                 if new_hash not in old_hashes:
                     new_document.append({"add": doc})
+
             # Identify documents to REMOVE (Appends just the ID)
             removed_hashes = old_hashes - new_hashes
             for r_hash in removed_hashes:
@@ -132,20 +135,6 @@ class Document_Ingestor:
         embedding_instance = Embedding()
         return embedding_instance.get_embedding(chunks)
 
-    def upsert_document(self, doc_id: str, chunk: str, embedding: list[float]):
-        """
-        Upsert a document chunk and its corresponding embedding into the ChromaDB collection.
-
-        Args:
-            doc_id (str): The unique identifier for the document chunk.
-            chunk (str): The text content of the document chunk.
-            embedding (list[float]): The embedding vector corresponding to the document chunk.
-        """
-        try:
-            collection.upsert(ids=[doc_id], documents=[chunk], embeddings=[embedding])
-            print(f"Successfully upserted document with ID: {doc_id}")
-        except Exception as e:
-            print(f"Error occurred while upserting document with ID {doc_id}: {e}")
 
     def remove_document(self, doc_id: str):
         try:

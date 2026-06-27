@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.embedding import Embedding
 from src.chunking import chunk_text
 from src.ingest import Document_Ingestor
+from src.vectorstore import upsert_document, query_document
 
 app = FastAPI()
 
@@ -23,6 +24,10 @@ def create_embedding(item: Item):
     embeddings = embedding_instance.get_embedding(chunks)
     return {"embeddings": embeddings}
 
+@app.post("/admin/query")
+def query(item: Item):
+    result = query_document(item.text)
+    return {"results": result}
 
 @app.post("/admin/reindex")
 def reindex():
@@ -53,9 +58,12 @@ def reindex():
                     print(
                         f"Embedding for chunk with ID: {chunk['id']} created successfully."
                     )
-                    ingest_instance.upsert_document(chunk["id"], chunk, embedding[0])
+                    upsert_document(chunk["id"], chunk, embedding[0])
                     print(f"Chunk with ID: {chunk['id']} upserted successfully.")
                 ingest_instance.save_metadata(add_doc["id"], add_doc["content"])
                 print(
                     f"Metadata for document with ID: {add_doc['id']} saved successfully."
                 )
+        return {"message": "Reindexing completed successfully."}
+    else:
+        return {"message": "No changes detected in the documents."}

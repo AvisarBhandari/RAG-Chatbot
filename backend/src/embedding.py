@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import chromadb
 from openai import OpenAI
+# from huggingface_hub import InferenceClient
 
 load_dotenv()
 
@@ -46,5 +47,23 @@ class Embedding:
                 raise
 
             # Extract and store the raw vector lists from the response payload
-            all_embeddings.extend([item.embedding for item in response.data])
-        return all_embeddings
+            if response.data is not None:
+                all_embeddings.extend([item.embedding for item in response.data])
+                return all_embeddings
+            else:
+                raise ValueError("No embedding data returned from the API.")
+
+ 
+# class Embedding:
+#     def __init__(self):
+#         self.client = InferenceClient(
+#             provider="auto",
+#             api_key=os.environ["HF_TOKEN"],
+#         )
+
+#     def get_embedding(self, chunk: list[str]):
+#         result = self.client.feature_extraction(
+#             text=chunk,
+#             model="BAAI/bge-m3",
+#         )
+#         return result
