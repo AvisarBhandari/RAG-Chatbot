@@ -58,6 +58,7 @@ def reindex():
                     print(
                         f"Embedding for chunk with ID: {chunk['id']} created successfully."
                     )
+                    
                     upsert_document(chunk["id"], chunk, embedding[0])
                     print(f"Chunk with ID: {chunk['id']} upserted successfully.")
                 ingest_instance.save_metadata(add_doc["id"], add_doc["content"])

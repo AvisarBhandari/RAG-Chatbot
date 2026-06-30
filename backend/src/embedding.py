@@ -49,9 +49,9 @@ class Embedding:
             # Extract and store the raw vector lists from the response payload
             if response.data is not None:
                 all_embeddings.extend([item.embedding for item in response.data])
-                return all_embeddings
             else:
                 raise ValueError("No embedding data returned from the API.")
+            return all_embeddings
 
  
 # class Embedding:
