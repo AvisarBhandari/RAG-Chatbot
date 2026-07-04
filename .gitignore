@@ -13,4 +13,6 @@ venv/
 # *public/
 
 .vercel
-.env*
+*.env
+*.metadata.json
+*chroma_db/

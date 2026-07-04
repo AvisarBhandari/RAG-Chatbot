@@ -25,9 +25,7 @@ def upsert_document(chunk: str, embedding: list[float]):
         print("Total items in collection:", collection.count())
         print("Sample item inspection:", collection.peek(limit=1))
     except Exception as e:
-        raise ValueError(
-            f"Error occurred while upserting document with ID {chunk['id']}: {e}"
-        )
+        raise RuntimeError(f"Failed to upsert document {chunk['id']}") from e
 
 
 def query_document(question, n_results=2):
@@ -35,3 +33,6 @@ def query_document(question, n_results=2):
     embedding = embedding_function.get_embedding(chunk=[question])
     result = collection.query(query_embeddings=embedding, n_results=n_results)
     return result
+
+
+
