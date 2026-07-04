@@ -10,6 +10,7 @@ client = OpenAI(
 )
 MODEL_NAME = os.getenv("LLM_MODEL")  # "gpt-4o-mini" or "gpt-4o"
 
+
 def generate_response(question, revelent_chunks):
     context = "\n\n".join(revelent_chunks)
     system_prompt = (
@@ -30,7 +31,5 @@ def generate_response(question, revelent_chunks):
             if delta and delta.content:
                 yield delta.content
 
-
-    
     except Exception as e:
         raise RuntimeError(f"Error: {e}") from e

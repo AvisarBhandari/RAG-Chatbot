@@ -1,4 +1,7 @@
+import json
+
 from fastapi import FastAPI, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from src.embedding import Embedding
 from src.chunking import chunk_text
@@ -69,9 +72,30 @@ def reindex():
     else:
         return {"message": "No changes detected in the documents."}
 
+
 @app.post("/chat")
-def test(question: Item):
-    question_text = question.text
-    relevant_chunks = query_document(question_text)
-    for token in generate_response(question=question_text, revelent_chunks=relevant_chunks):
-        print(token, end="", flush=True)
+def chat(question: Item):
+    def generate():
+        question_text = question.text
+        relevant_chunks = query_document(question_text)
+
+        # Send retrieved chunks first
+        yield (
+            json.dumps({"type": "context", "chunks": relevant_chunks}) + "\n"
+        ).encode("utf-8")
+        # Stream LLM tokens
+        try:
+            for chunk in generate_response(question_text, relevant_chunks):
+                yield (json.dumps({"type": "token", "content": chunk}) + "\n").encode(
+                    "utf-8"
+                )
+                print(f"Streaming token: {chunk}")  # Debugging statement
+        except Exception as e:
+            yield (json.dumps({"type": "error", "message": str(e)}) + "\n").encode(
+                "utf-8"
+            )
+            print(f"Error during response generation: {e}")  # Debugging statement
+    return StreamingResponse(
+        generate(),
+        media_type="text/plain",
+    )
