@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from src.embedding import Embedding
 from src.chunking import chunk_text
 from src.ingest import Document_Ingestor
-from src.vectorstore import upsert_document, query_document
+from src.vectorstore import upsert_document, query_document, collection
 
 app = FastAPI()
 
@@ -24,10 +24,12 @@ def create_embedding(item: Item):
     embeddings = embedding_instance.get_embedding(chunks)
     return {"embeddings": embeddings}
 
+
 @app.post("/admin/query")
 def query(item: Item):
     result = query_document(item.text)
     return {"results": result}
+
 
 @app.post("/admin/reindex")
 def reindex():
@@ -37,7 +39,7 @@ def reindex():
         for doc in change_docs:
             if "remove" in doc:
                 remove_id = doc["remove"]
-                print(f"Removing document with ID: {remove_id}")
+                print("Removing document")
                 ingest_instance.remove_document(remove_id)
                 ingest_instance.remove_matadata(remove_id)
                 print(f"Document with ID: {remove_id} removed successfully.")
@@ -46,21 +48,17 @@ def reindex():
                 )
             if "add" in doc:
                 add_doc = doc["add"]
-                print(f"Adding document with ID: {add_doc['id']}")
+                print("Adding document")
 
                 chunked_docs = ingest_instance.chunk_document(add_doc)
-                print(
-                    f"Document with ID: {add_doc['id']} chunked into {len(chunked_docs)} chunks."
-                )
+                print(f"Document chunked into {len(chunked_docs)} chunks.")
                 for chunk in chunked_docs:
                     chunk_text = chunk["content"]
                     embedding = ingest_instance.embed_chunks([chunk_text])
-                    print(
-                        f"Embedding for chunk with ID: {chunk['id']} created successfully."
-                    )
-                    
-                    upsert_document(chunk["id"], chunk, embedding[0])
-                    print(f"Chunk with ID: {chunk['id']} upserted successfully.")
+                    print("Embedding created successfully.")
+
+                    upsert_document(chunk, embedding[0])
+
                 ingest_instance.save_metadata(add_doc["id"], add_doc["content"])
                 print(
                     f"Metadata for document with ID: {add_doc['id']} saved successfully."

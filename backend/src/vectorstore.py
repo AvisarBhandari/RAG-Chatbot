@@ -10,20 +10,24 @@ collection_name = "my_collection"
 collection = chroma_client.get_or_create_collection(name=collection_name)
 
 
-def upsert_document(doc_id: str, chunk: str, embedding: list[float]):
+def upsert_document(chunk: str, embedding: list[float]):
     """
     Upsert a document chunk and its corresponding embedding into the ChromaDB collection.
 
     Args:
-        doc_id (str): The unique identifier for the document chunk.
         chunk (str): The text content of the document chunk.
         embedding (list[float]): The embedding vector corresponding to the document chunk.
     """
     try:
-        collection.upsert(ids=[doc_id], documents=[chunk], embeddings=[embedding])
-        print(f"Successfully upserted document with ID: {doc_id}")
+        collection.upsert(
+            ids=[chunk["id"]], documents=[chunk["content"]], embeddings=[embedding]
+        )
+        print("Total items in collection:", collection.count())
+        print("Sample item inspection:", collection.peek(limit=1))
     except Exception as e:
-        print(f"Error occurred while upserting document with ID {doc_id}: {e}")
+        raise ValueError(
+            f"Error occurred while upserting document with ID {chunk['id']}: {e}"
+        )
 
 
 def query_document(question, n_results=2):
