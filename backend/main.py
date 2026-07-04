@@ -3,7 +3,9 @@ from pydantic import BaseModel
 from src.embedding import Embedding
 from src.chunking import chunk_text
 from src.ingest import Document_Ingestor
-from src.vectorstore import upsert_document, query_document, collection
+from src.vectorstore import upsert_document, query_document
+from src.retrieval import generate_response
+
 
 app = FastAPI()
 
@@ -66,3 +68,10 @@ def reindex():
         return {"message": "Reindexing completed successfully."}
     else:
         return {"message": "No changes detected in the documents."}
+
+@app.post("/chat")
+def test(question: Item):
+    question_text = question.text
+    relevant_chunks = query_document(question_text)
+    for token in generate_response(question=question_text, revelent_chunks=relevant_chunks):
+        print(token, end="", flush=True)

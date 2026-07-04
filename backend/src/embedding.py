@@ -9,7 +9,7 @@ load_dotenv()
 
 class Embedding:
     def __init__(self):
-        self.api_key = os.getenv("Embedding_api_key")
+        self.api_key = os.getenv("OPENROUTER_API_KEY")
         self.model_name = os.getenv("Embedding_model")
         if not self.api_key or not self.model_name:
             raise ValueError(

@@ -95,7 +95,7 @@ class Document_Ingestor:
         df = pd.DataFrame(data=self.load_metadata())
         if document_id is list:
             document_id = set(document_id)
-            
+
             filtered_df = df[~df["id"].isin(document_id)]
         else:
             # Keeps rows where 'id' does NOT contain 'document_id'
@@ -135,11 +135,12 @@ class Document_Ingestor:
         embedding_instance = Embedding()
         return embedding_instance.get_embedding(chunks)
 
-
     def remove_document(self, doc_id: str):
         try:
             collection.delete(
                 ids=doc_id,
             )
         except Exception as e:
-            print(f"Error occer while deleting data {doc_id}: {e}")
+            raise RuntimeError(
+                f"Error occurred while deleting data {doc_id}: {e}"
+            ) from e
