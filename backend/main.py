@@ -73,7 +73,7 @@ def reindex():
         return {"message": "No changes detected in the documents."}
 
 
-@app.post("/chat")
+@app.post("/admin/chat")
 def chat(question: Item):
     def generate():
         question_text = question.text
@@ -95,6 +95,36 @@ def chat(question: Item):
                 "utf-8"
             )
             print(f"Error during response generation: {e}")  # Debugging statement
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/plain",
+    )
+
+
+@app.post("/chat")
+def chat_stream(question: Item):
+    def generate():
+        question_text = question.text
+        relevant_chunks = query_document(question_text)
+
+        # Send retrieved chunks first
+        yield (
+            json.dumps({"type": "context", "ids": relevant_chunks["ids"]}) + "\n"
+        ).encode("utf-8")
+        # Stream LLM tokens
+        try:
+            for chunk in generate_response(question_text, relevant_chunks):
+                yield (json.dumps({"type": "token", "content": chunk}) + "\n").encode(
+                    "utf-8"
+                )
+                print(f"Streaming token: {chunk}")  # Debugging statement
+        except Exception as e:
+            yield (json.dumps({"type": "error", "message": str(e)}) + "\n").encode(
+                "utf-8"
+            )
+            print(f"Error during response generation: {e}")  # Debugging statement
+
     return StreamingResponse(
         generate(),
         media_type="text/plain",
