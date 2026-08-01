@@ -1,8 +1,7 @@
 import React from 'react'
-import TheamController from '../ThemeController'
-import ChatHeader from './ChatHeader'
-import ChatInput from './ChatInput'
-import ChatBody from './ChatBody'
+import ChatHeader from './chat/ChatHeader'
+import ChatInput from './chat/ChatInput'
+import ChatBody from './chat/ChatBody'
 const MainContent  = () => {
   return (
             <div className=" flex flex-col h-screen grow bg-base-100">
