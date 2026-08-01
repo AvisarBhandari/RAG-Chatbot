@@ -1,5 +1,5 @@
 import React from "react";
-import img from "../../../assets/bot.png";
+import img from "../../../../assets/bot.png";
 
 const EmptyState = () => {
   return (
