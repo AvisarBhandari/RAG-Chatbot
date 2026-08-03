@@ -1,20 +1,21 @@
-import React,{ useState } from "react";
+import React, { useState } from "react";
 import { Send } from "lucide-react";
-const ChatInput = ({onSend}) => {
+const ChatInput = ({ onSend }) => {
   const [text, setText] = useState("");
-  const handleSubmit = (e) =>{
-    // If called 'handelKeyDown' 'e' will not be define.(Learn the hard way)
+  const handleSubmit = (e) => {
+    // If called by 'handelKeyDown' 'e' will not be define.(Learn the hard way)
     if (e) e.preventDefault();
     // prevent empty message
-    if (!text.trim){return}
-    else{
-      onSend(text)
+    if (!text.trim()) {
+      return;
+    } else {
+      onSend(text);
       setText("");
     }
-  }
- const handleKeyDown = (e) => {
+  };
+  const handleKeyDown = (e) => {
     // Check if Enter was pressed without Shift
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
@@ -22,7 +23,7 @@ const ChatInput = ({onSend}) => {
 
   return (
     <div className="flex min-w-full h-20  items-center justify-center">
-      <div class="absolute bottom-10 w-full max-w-[50%] px-4">
+      <div className="absolute bottom-10 w-full max-w-[50%] px-4">
         <form
           onSubmit={handleSubmit}
           className="flex items-end gap-2 p-2 border rounded-xl bg-accent-content shadow-sm focus-within:ring-2 focus-within:ring-blue-500"
