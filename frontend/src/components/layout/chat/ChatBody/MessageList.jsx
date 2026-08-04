@@ -12,7 +12,7 @@ const MessageList = ({ messages, loading }) => {
       {messages.map((message) => (
         <Message key={message.id} message={message} loading={loading} />
       ))}
-      {loading && (
+    {loading && (
         <div className="chat chat-start w-[80%]">
           <div className="chat-bubble">
             <div className="flex flex-row gap-2">
@@ -22,8 +22,11 @@ const MessageList = ({ messages, loading }) => {
             </div>
           </div>
         </div>
-      )}
+      )} 
     </>
+    // <div>
+    //   <Message />
+    // </div>
   );
 };
 
