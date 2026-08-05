@@ -8,16 +8,19 @@ const ChatBody = ({ messages, loading }) => {
   const scrollIntoView = () => {
     bottomOfPanelRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  useEffect(()=>{
-      scrollIntoView();
-  },[messages])
+  useEffect(() => {
+    scrollIntoView();
+  }, [messages]);
+  if (messages.length === 0) {
+    return <EmptyState />;
+  } else {
     return (
       <div className="overflow-auto h-[80%]">
-        <MessageList  messages={messages} loading={loading} />
+        <MessageList messages={messages} loading={loading} />
         <div ref={bottomOfPanelRef}></div>
       </div>
     );
-  // }
+  }
 };
 
 export default ChatBody;
