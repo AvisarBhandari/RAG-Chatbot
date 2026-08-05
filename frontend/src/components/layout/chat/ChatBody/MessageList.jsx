@@ -6,7 +6,6 @@ const MessageList = ({ messages, loading }) => {
   //   console.log(message.role);
   //   console.log(message.content);
   // };
-  console.log("L:", loading);
   return (
     <>
       {messages.map((message) => (
