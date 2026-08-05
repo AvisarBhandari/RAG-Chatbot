@@ -1,6 +1,7 @@
 import json
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from src.embedding import Embedding
@@ -12,6 +13,14 @@ from src.retrieval import generate_response
 
 app = FastAPI()
 
+# Enable CORS for all origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 class Item(BaseModel):
     text: str

@@ -8,10 +8,14 @@ const MessageList = ({ messages, loading }) => {
   // };
   return (
     <>
-      {messages.map((message) => (
-        <Message key={message.id} message={message} loading={loading} />
-      ))}
-    {loading && (
+      {messages.map((message) => {
+        // FIX: Don't show the assistant bubble if it hasn't received text yet
+        if (message.role === "assistant" && !message.content.trim()) {
+          return null;
+        }
+        return <Message key={message.id} message={message} loading={loading} />;
+      })}
+      {loading && (
         <div className="chat chat-start w-[80%]">
           <div className="chat-bubble">
             <div className="flex flex-row gap-2">
@@ -21,7 +25,7 @@ const MessageList = ({ messages, loading }) => {
             </div>
           </div>
         </div>
-      )} 
+      )}
     </>
     // <div>
     //   <Message />
