@@ -1,6 +1,9 @@
 import axios from "axios";
+
 export const streamChatbot = async (userMassage, onTokenReceived) => {
-  const response = await fetch("http://127.0.0.1:8000/chat", {
+  const apiUrl = import.meta.env.VITE_BACKEND_API_URL;
+  console.log("API URL:", apiUrl); 
+  const response = await fetch(`${apiUrl}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text: userMassage }),
